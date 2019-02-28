@@ -1,0 +1,68 @@
+<html>
+  <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <h1>テスト！！！！！！！！！！！！！</h1>
+
+    <% require 'pg' %>
+
+    <% connection = PG::connect(dbname: "goya") %>
+    <% connection.internal_encoding = "UTF-8" %>
+
+    <form action='indicate.cgi' method='POST'>
+       下記に文字を入力してください<br><br>
+      <input type="text"  name='input' > <br>
+      <input type="submit" name="送信" >
+    </form>
+
+
+    <% result = connection.exec("select date, weight, give_for from crops;") %>
+    <% date = [] %>
+
+    <% result.each do |record| %>
+      <%  date << "ゴーヤの大きさ：#{record["weight"]}　売った相手：#{record["give_for"]}" %>
+    <% end %>
+
+    <form action='goya.cgi' method='POST'>
+       下記のボタンを押すと、ゴーヤの大きさと売った相手の情報ページに飛びます<br><br>
+       <!-- valueには、送りたいデータを代入する -->
+       <!-- name="goya"を、情報の目印とする -->
+      <input type="text" name="goya" value="<%= date.join(' ') %>">
+      <input type="submit" name="送信" >
+    </form>
+    
+
+    <% result_notJika = connection.exec("select date, weight, give_for from crops where not(give_for = '自家消費');") %>
+    <% date_notJika = [] %>
+
+    <% result_notJika.each do |record| %>
+      <%  date_notJika << "ゴーヤの大きさ：#{record["weight"]}　売った相手：#{record["give_for"]}" %>
+    <% end %>
+    
+    <form action='goya_notJika.cgi' method='POST'>
+       下記のボタンを押すと、自家消費を除いたゴーヤの情報ページに飛びます<br><br>
+       <!-- valueには、送りたいデータを代入する -->
+       <!-- name="goya"を、情報の目印とする -->
+      <input type="text" name="goya_notJika" value="<%= date_notJika.join(' ') %>">
+      <input type="submit" name="送信" >
+    </form> 
+    
+
+    <% result_badQuality = connection.exec("select date, weight, give_for from crops where quality = false ;") %>
+    <% date_badQuality = [] %>
+
+    <% result_badQuality.each do |record| %>
+      <%  date_badQuality << "ゴーヤの大きさ：#{record["weight"]}　売った相手：#{record["give_for"]}" %>
+    <% end %>
+    
+    <form action='goya_badQuality.cgi' method='POST'>
+       下記のボタンを押すと、品質が悪いゴーヤの情報ページに飛びます<br><br>
+       <!-- valueには、送りたいデータを代入する -->
+       <!-- name="goya"を、情報の目印とする -->
+      <input type="text" name="goya_badQuality" value="<%= date_badQuality.join(' ') %>">
+      <input type="submit" name="送信" >
+    </form> 
+    
+  </body>
+</html>
